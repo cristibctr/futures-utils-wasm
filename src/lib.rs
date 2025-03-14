@@ -22,7 +22,7 @@ use core::{future::Future, pin::Pin};
 ///     async {}
 /// }
 /// ```
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(any(not(target_arch = "wasm32"), target_vendor = "wasmer"))]
 #[macro_export]
 macro_rules! impl_future {
     (<$($t:tt)+) => {
@@ -39,7 +39,7 @@ macro_rules! impl_future {
 ///     async {}
 /// }
 /// ```
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", not(target_vendor = "wasmer")))]
 #[macro_export]
 macro_rules! impl_future {
     (<$($t:tt)+) => {
@@ -48,12 +48,12 @@ macro_rules! impl_future {
 }
 
 /// Type alias for a pin-boxed future, with a `Send` bound on non-wasm targets.
-#[cfg(all(feature = "alloc", not(target_arch = "wasm32")))]
+#[cfg(all(feature = "alloc", any(not(target_arch = "wasm32"), target_vendor = "wasmer")))]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + 'a + Send>>;
 
 /// Type alias for a pin-boxed future, with a `Send` bound on non-wasm targets.
-#[cfg(all(feature = "alloc", target_arch = "wasm32"))]
+#[cfg(all(feature = "alloc", target_arch = "wasm32", not(target_vendor = "wasmer")))]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + 'a>>;
 
